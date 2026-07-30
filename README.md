@@ -1,3 +1,47 @@
+Hi Christ-Jan, nog een korte uitleg over de applicatie:
+
+Deze applicatie simuleert een parkeergarage. Hiervoor heb ik 2 entities gemaakt: ParkingGarage en ParkingSession.
+
+De CRUD operaties voor de ParkingGarage werken niet helemaal; ik had hier ook niet de focus op gelegd tijdens het oefenen. De crud operaties voor de ParkingGarage werken nog volgens de eerste opzet, dus met een gescaffolde controller. Ik zou hier alleen de POST even voor gebruiken. Voorbeeld payload:
+
+{
+  "name": "Garage01",
+  "capacity": 5
+}
+
+Deze kan je opsturen naar /api/parking/garage/
+
+Het stukje om auto's in- en uit te laten rijden heb ik gebouwd met behulp van API platform. De routes staan op de entity zelf in PHPAttributes.
+
+Je kan een auto laten "inrijden" door een ParkingSession entity aan te maken. Dit gaat via /api/start-parking-session. Voorbeeld JSON:
+
+{
+  "garageId": 1,
+  "actualEntry": "2026-07-30 11:00:00",
+  "licencePlate": "ABC123"
+}
+
+Bij het inrijden checkt de ParkingSessionStartProcessor of er plek is in de garage (hier kijkt hij naar het aantal actieve sessies en vergelijkt dat met de capaciteit van de garage). Zo ja, dan maakt hij de entity aan. Hier heb ik ook het stukje met de locks ingebouwd om concurrency issues tegen te gaan.
+
+Bij het "uitrijden" wordt /api/end-parking-session aangeroepen (POST). Voorbeeld JSON:
+
+{
+  "garageId": 1,
+  "actualExit": "2026-07-30 12:00:00",
+  "licencePlate": "ABC123"
+}
+
+Hier simuleert de ParkingSessionEndProcessor ook nog het versturen van een mail; voor dit heb ik om het simpel te houden gewoon een logger gebruikt in de MessageHandler. Ik wilde vooral even kijken hoe de flow gaat bij het gebruiken van messages.
+
+Verder is het nog mogelijk om een kenteken op te geven en (indien deze bestaat) de actieve parkeersessie voor dit kenteken op te vragen. Hiervoor kan je het endpoint /api/get-active-session/{$licencePlate} gebruiken (POST).
+
+Om de applicatie te runnen kan je in de folder van de repo het commando docker compose up -d uitvoeren. 
+Om commands te runnen binnen de applicatie kan je docker exec -it parking-php-1 <command> runnen.
+
+Als ik wat meer tijd had gehad had ik ook wat tests geschreven maar ivm de beperkte tijd heb ik dit achterwege gelaten.
+
+Hieronder de meegeleverde README van Symfony zelf over de infrastructuur van de applicatie:
+
 # Symfony Docker
 
 A [Docker](https://www.docker.com/)-based installer and runtime for the [Symfony](https://symfony.com) web framework,
